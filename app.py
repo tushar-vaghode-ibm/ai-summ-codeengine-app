@@ -1,4 +1,14 @@
+from ibm_watsonx_ai.foundation_models.utils.enums import ModelTypes
+from ibm_watsonx_ai.foundation_models import Model
+import json
 import streamlit as st
+
+# import vairables
+import os
+WATSONX_URL = os.environ.get('WATSONX_URL', 'https://us-south.ml.cloud.ibm.com')
+WATSONX_APIKEY = os.environ.get('WATSONX_APIKEY')
+WATSONX_LLM_ID = os.environ.get('DEFAULT_WATSONX_MODEL_ID', 'GRANITE_13B_CHAT_V2')
+WATSONX_PROJECT_ID = os.environ.get('WATSONX_PROJECT_ID')
 
 # Set page configuration
 st.set_page_config(
@@ -10,31 +20,34 @@ st.set_page_config(
 
 # Add a title and a subtitle
 st.title("AI Summarization using serverless architecture in IBM Cloud")
-st.markdown("""
-This application takes an input from the user, processes it, and displays the output.
-""")
-
-# Define a function to process the input
-def process_input(input_value):
-  # Replace this with any processing you need
-  return input_value.upper()
-
-
-# Create a sidebar for input
-with st.sidebar:
-  option = st.selectbox(
-    "Select LLM",
-    ("granite", "llama")
-  )
 
 # st.header("Input Section")
 with st.form(key='myform'):
-  input_value = st.text_area("Enter your input here", height=50)
+  input_value = st.text_area("Ask a question or enter your input text for summarization:", "What are key capabilities of IBM watsonx.ai?", height=50)
   submit_button = st.form_submit_button(label="Submit")
 
-# Process the input
-output_value = process_input(input_value)
+# setup watsonx.ai connection
+my_credentials = {
+    "url"    : WATSONX_URL,
+    "apikey" : WATSONX_APIKEY
+}
+llm_model   = getattr(ModelTypes, WATSONX_LLM_ID)
+project_id  = WATSONX_PROJECT_ID
+space_id    = None
+verify      = False
+parameters  = {
+  "decoding_method": "greedy",
+  "max_new_tokens": 2000,
+  "min_new_tokens": 100,
+  "repetition_penalty": 1
+ }
+model = Model(llm_model, my_credentials, parameters, project_id, space_id, verify)
+
+
+# Define a function to process the input
+def process_input(input_value):
+  return model.generate_text(input_value)
 
 # Display the output
 # st.header("Output Section")
-st.text_area("Processed Output", output_value, height=300, disabled=True)
+st.text_area("AI generated output:", process_input(input_value), height=400, disabled=True)
