@@ -3,6 +3,10 @@ from ibm_watsonx_ai.foundation_models import Model
 import json
 import streamlit as st
 
+st.set_page_config(
+  page_title="AI Summarization using serverless architecture"
+)
+
 st.header("AI summarization using serverless architecture in IBM Cloud")
 prompt = st.chat_input("Ask something")
 
@@ -38,6 +42,6 @@ if prompt:
   model = model_init()
   output = model.generate_text(prompt)
 
-st.html("<h4 style='color: gray'>AI generated output:</h1>")
+st.html("<h4 style='color: gray'>AI generated output:</h4>")
 with st.container(border=True, height=500):
   st.write(output)
